@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button,Modal,Form, Spinner,Col } from 'react-bootstrap'
 import AuthorInfo from '../AuthorInfo';
 import { useAuth } from '../../hooks/useAuth';
@@ -9,6 +9,7 @@ import AddTags from '../AddTags/';
 
 export default function CreatPoll() {
     const auth=useAuth();
+    const editingOptionField=useRef(null);
     const [show, setShow] = useState(false);
     const [loading,setLoading]=useState(false);
     const [poll,setPoll]=useState({options:{}});
@@ -18,8 +19,12 @@ export default function CreatPoll() {
     const handleShow = () => setShow(true);
     const addOption = () => {
         if(editingOption!=""){
-            // setPoll(...poll,options:{...poll.options,editingOptionId:{text:editingOption}})
-            setEditingOption("");
+            let pollOptions={...poll.options};
+            pollOptions[editingOptionId]={text:editingOption,votes:0};
+            setPoll({...poll,options:pollOptions});
+            setEditingOptionId(uuidv4());
+            console.log(poll);
+            editingOptionField.current.value="";
         }
     }
 
@@ -44,7 +49,7 @@ export default function CreatPoll() {
             <Modal.Body className="px-4">
                 <AuthorInfo author={auth.user} self min/>
                 <Form>
-                    <Form.Group controlId="WritePollForm.ControlTextarea">
+                    <Form.Group>
                         <Form.Label>Enter the Title of your poll:</Form.Label>
                         <Form.Control 
                             className="mb-1"
@@ -54,22 +59,23 @@ export default function CreatPoll() {
                             }} 
                         />
                     </Form.Group>
-                    <Form.Group controlId="WritePollForm.ControlTextarea">
+                    <Form.Group>
                         <Form.Label>Tag your poll:</Form.Label>
                         <AddTags setQuestion={setPoll} question={poll}/>
                     </Form.Group>
-                    <Form.Group controlId="WritePollForm.ControlTextarea">
+                    <Form.Group>
                         <Form.Label>Options:</Form.Label>
                         <Form.Row className="align-items-center">
                             <Col>
-                                <Form.Label htmlFor="inlineFormInput" srOnly>
+                                <Form.Label srOnly>
                                     Option Text
                                 </Form.Label>
                                 <Form.Control
+                                    ref={editingOptionField}
                                     size="sm"
-                                    id="inlineFormInput"
                                     placeholder="Option text"
                                     onChange={(e)=>{
+                                        console.log(e.target.value);
                                         setEditingOption(e.target.value);
                                     }} 
                                 />
